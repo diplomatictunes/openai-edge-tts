@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Audio Generator</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script> ```
+
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 15px; background-color: #f4f4f4; color: #333; }
+        h1 { text-align: center; color: #0056b3; }
+        form { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        textarea, select, input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #audioPlayerContainer {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Text-to-Speech Generator</h1>
+    <form id="ttsForm" hx-post="/v1/audio/speech" hx-trigger="submit" hx-target="#audioPlayerContainer" hx-swap="innerHTML" hx-ext="json-enc">
+        <label for="text_input">Text to Speak:</label>
+        <textarea id="text_input" name="input" rows="10" placeholder="Enter your text here, including Markdown if you like."></textarea>
+
+        <label for="voice_select">Select Voice:</label>
+        <select id="voice_select" name="voice">
+            {% for voice in voices %}
+                <option value="{{ voice.name }}" {% if loop.first %}selected{% endif %}>
+                    {{ voice.name }} ({{ voice.gender }}, {{ voice.language }})
+                </option>
+            {% endfor %}
+        </select>
+
+       <label for="speed_input">Speech Speed (0.1 - 2.0, default 1.0):</label>
+       <input type="number" id="speed_input" name="speed" value="1.0" min="0.1" max="2.0" step="0.1">
+ 
+        <button type="submit">Generate Audio</button>
+    </form>
+    <div id="audioPlayerContainer">
+        <p>Your generated audio will appear here.</p>
+    </div>
+
+    <script>
+        // Ensure you have the hx-ext="json-enc" extension loaded.
+        // If not already included with htmx.org@1.9.10, add this line:
+        // document.write('<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>');
+
+        // IMPORTANT: Re-add your API key handling if you want to use it
+        // and haven't set REQUIRE_API_KEY = False in config.py.
+        // This script block should be after all HTMX elements.
+        const API_KEY = 'your_secret_strong_api_key_here_12345'; // Use the same key as in config.py/env
+
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            if (evt.detail.elt.id === 'ttsForm') {
+                evt.detail.headers['Authorization'] = 'Bearer ' + API_KEY;
+            }
+        });
+    </script>
+</body>
+</html>
